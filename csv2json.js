@@ -27,6 +27,7 @@ const reader = readline.createInterface({
 });
 
 const out = fs.createWriteStream(outFile);
+out.write('[\n');
 
 let nl = 0;
 let names;
@@ -53,6 +54,7 @@ reader.on('line', (line) => {
 });
 
 reader.on('close', () => {
+    out.write(']\n');
     out.close();
     console.log(`Number of lines processed = ${nl}.`);
 });
