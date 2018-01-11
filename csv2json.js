@@ -3,7 +3,7 @@ if (process.argv.length !== 4) {
     console.log('Generates a json file from a comma-separated values file (csv).');
     console.log('------------------------------------------------------------------');
     console.log('The first line should contain member "names" for all json objects.');
-    console.log('Subsequent lines should have member "values" for each json object.')
+    console.log('Subsequent lines should have member "values" for each json object.');
     console.log('Usage:');
     console.log('       node csv2json.js <input-csv-file> <output-json-file>');
     console.log('------------------------------------------------------------------');
