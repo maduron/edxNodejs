@@ -27,6 +27,7 @@ const reader = readline.createInterface({
 });
 
 const out = fs.createWriteStream(outFile);
+
 out.write('[\r\n');  // every '\r\n' sequence is to match provided output (in windows style)
 
 let nl = 0;
@@ -42,24 +43,28 @@ reader.on('line', (line) => {
     } else {        // for every subsequent line, get its values...
         vals = line.split(',');
         if (vals.length === len) {
-            let obj = {};  // object to be stringified...
-            for (let i = 0; i < len; ++i) {
-                obj[names[i]] = vals[i];
-            }
-            let objStr = JSON.stringify(obj);
-            const s1 = objStr.replace('{"', '  {\r\n    "'); // to match provided output
-            const s2 = s1.replace(/":"/g, '": "');         // to match provided output
-            const s3 = s2.replace(/","/g, '",\r\n    "');     // to match provided output
-            objStr = s3.replace('"}', '"\r\n  }');           // to match provided output
-            if (nl > 2) {
-                out.write(',\r\n') // separate from previous object...
-            }
-            out.write(objStr);
+            writeLineAsJSON();
         } else {
             console.log(`Line ${nl} with ${vals.length} values; ${len} are required. Skipping...`);
         }
     }
 });
+
+function writeLineAsJSON() {
+    let obj = {};  // object to be stringified...
+    for (let i = 0; i < len; ++i) {
+        obj[names[i]] = vals[i];
+    }
+    let objStr = JSON.stringify(obj);
+    const s1 = objStr.replace('{"', '  {\r\n    "');  // to match provided output
+    const s2 = s1.replace(/":"/g, '": "');            // to match provided output
+    const s3 = s2.replace(/","/g, '",\r\n    "');     // to match provided output
+    objStr = s3.replace('"}', '"\r\n  }');            // to match provided output
+    if (nl > 2) {
+        out.write(',\r\n') // separate from previous object...
+    }
+    out.write(objStr);
+}
 
 reader.on('close', () => {
     if (nl > 2) {
