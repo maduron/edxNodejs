@@ -30,47 +30,47 @@ const out = fs.createWriteStream(outFile);
 
 out.write('[\r\n');  // every '\r\n' sequence is to match provided output (in windows style)
 
-let nl = 0;
-let names;
-let vals;
-let len = 0;
+let lc = 0;          // Line count
+let keys;            // Keys (or names) of the object's members
+let vals;            // Values corresponding to the object's members
+let nKeys = 0;       // Number of key:value pairs that each object should have
 
 reader.on('line', (line) => {
-    ++nl;
-    if (nl === 1) { // get the names from the first line...
-        names = line.split(',');
-        len = names.length;
+    ++lc;
+    if (lc === 1) { // get the keys from the first line...
+        keys = line.split(',');
+        nKeys = keys.length;
     } else {        // for every subsequent line, get its values...
         vals = line.split(',');
-        if (vals.length === len) {
+        if (vals.length === nKeys) {
             writeLineAsJSON();
         } else {
-            console.log(`Line ${nl} with ${vals.length} values; ${len} are required. Skipping...`);
+            console.log(`Line ${lc} with ${vals.length} values; ${nKeys} are required. Skipping...`);
         }
     }
 });
 
 function writeLineAsJSON() {
     let obj = {};  // object to be stringified...
-    for (let i = 0; i < len; ++i) {
-        obj[names[i]] = vals[i];
+    for (let i = 0; i < nKeys; ++i) {
+        obj[keys[i]] = vals[i];
     }
     let objStr = JSON.stringify(obj);
     const s1 = objStr.replace('{"', '  {\r\n    "');  // to match provided output
     const s2 = s1.replace(/":"/g, '": "');            // to match provided output
     const s3 = s2.replace(/","/g, '",\r\n    "');     // to match provided output
     objStr = s3.replace('"}', '"\r\n  }');            // to match provided output
-    if (nl > 2) {
+    if (lc > 2) {
         out.write(',\r\n') // separate from previous object...
     }
     out.write(objStr);
 }
 
 reader.on('close', () => {
-    if (nl > 2) {
+    if (lc > 2) {
         out.write('\r\n');   // if at least one "values" line, separate last one without a comma...
     }
     out.write(']');
     out.close();
-    console.log(`Number of processed lines = ${nl}.`);
+    console.log(`Number of processed lines = ${lc}.`);
 });
